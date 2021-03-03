@@ -130,7 +130,5 @@ spec:
             #!/usr/bin/env sh
             source .jx/variables.sh
             jx promote -b --all --timeout 1h --no-poll
-        usesTemplate:
-          path: jenkins-x/jx3-pipeline-catalog/tasks/go/release.yaml@HEAD
   serviceAccountName: default
 status: {}

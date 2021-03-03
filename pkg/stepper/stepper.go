@@ -22,7 +22,6 @@ func (r *Resolver) Do(ctx context.Context, prs *v1beta1.PipelineRun) error {
 		pt := &ps.Tasks[i]
 		if pt.TaskSpec != nil {
 			ts := &pt.TaskSpec.TaskSpec
-			clearStepTemplateImage := false
 			var steps []v1beta1.Step
 			for j := range ts.Steps {
 				step := ts.Steps[j]
@@ -49,9 +48,7 @@ func (r *Resolver) Do(ctx context.Context, prs *v1beta1.PipelineRun) error {
 				steps = append(steps, replaceSteps...)
 			}
 			ts.Steps = steps
-			if clearStepTemplateImage && ts.StepTemplate != nil {
-				ts.StepTemplate.Image = ""
-			}
+			ts.UsesTemplate = nil
 		}
 	}
 	return nil
