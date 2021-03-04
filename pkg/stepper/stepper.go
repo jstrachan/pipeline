@@ -13,6 +13,15 @@ type Resolver struct {
 	ResolveRemote func(ctx context.Context, uses *v1beta1.Uses) (remote.Resolver, error)
 }
 
+// NewResolver creates a new stepper resolver
+func NewResolver(opts *RemoterOptions) *Resolver {
+	cachingResolver := NewCachingRemoter(opts.CreateRemote)
+
+	return &Resolver{
+		ResolveRemote: cachingResolver.CreateRemote,
+	}
+}
+
 // Resolve will resolve any `uses` structs on any steps in any tasks
 func (r *Resolver) Resolve(ctx context.Context, prs *v1beta1.PipelineRun) error {
 	ps := prs.Spec.PipelineSpec

@@ -29,12 +29,6 @@ func TestStepper(t *testing.T) {
 		t.Errorf(errors.Wrapf(err, "failed to read source dir %s", sourceDir).Error())
 	}
 
-	fakeResolver := fake.NewFileResolver(filepath.Join("test_data", "git"))
-
-	remoteResolver := func(ctx context.Context, uses *v1beta1.Uses) (remote.Resolver, error) {
-		return fakeResolver, nil
-	}
-
 	// make it easy to run a specific test only
 	runTestName := os.Getenv("TEST_NAME")
 	for _, f := range fs {
@@ -65,7 +59,7 @@ func TestStepper(t *testing.T) {
 		}
 
 		ctx := context.TODO()
-		s := &stepper.Resolver{ResolveRemote: remoteResolver}
+		s := createTestStepper()
 		err = s.Resolve(ctx, prs)
 		if err != nil {
 			t.Errorf(errors.Wrapf(err, "failed to invoke stepper on file %s", path).Error())
@@ -96,4 +90,12 @@ func TestStepper(t *testing.T) {
 			t.Errorf("actual content for %s was: %s", path, got)
 		}
 	}
+}
+
+func createTestStepper() *stepper.Resolver {
+	fakeResolver := fake.NewFileResolver(filepath.Join("test_data", "git"))
+	remoteResolver := func(ctx context.Context, uses *v1beta1.Uses) (remote.Resolver, error) {
+		return fakeResolver, nil
+	}
+	return &stepper.Resolver{ResolveRemote: remoteResolver}
 }
