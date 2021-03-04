@@ -6,6 +6,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/pkg/errors"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	"github.com/tektoncd/pipeline/pkg/remote"
 	"github.com/tektoncd/pipeline/pkg/remote/fake"
 	"github.com/tektoncd/pipeline/pkg/stepper"
 	"github.com/tektoncd/pipeline/test/diff"
@@ -28,7 +29,11 @@ func TestStepper(t *testing.T) {
 		t.Errorf(errors.Wrapf(err, "failed to read source dir %s", sourceDir).Error())
 	}
 
-	remote := fake.NewFileResolver(filepath.Join("test_data", "git"))
+	fakeResolver := fake.NewFileResolver(filepath.Join("test_data", "git"))
+
+	remoteResolver := func(ctx context.Context, uses *v1beta1.Uses) (remote.Resolver, error) {
+		return fakeResolver, nil
+	}
 
 	// make it easy to run a specific test only
 	runTestName := os.Getenv("TEST_NAME")
@@ -60,8 +65,8 @@ func TestStepper(t *testing.T) {
 		}
 
 		ctx := context.TODO()
-		s := &stepper.Resolver{Remote: remote}
-		err = s.Do(ctx, prs)
+		s := &stepper.Resolver{ResolveRemote: remoteResolver}
+		err = s.Resolve(ctx, prs)
 		if err != nil {
 			t.Errorf(errors.Wrapf(err, "failed to invoke stepper on file %s", path).Error())
 		}

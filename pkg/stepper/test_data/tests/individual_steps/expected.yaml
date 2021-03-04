@@ -5,9 +5,161 @@ metadata:
   generateName: guarded-pr-
 spec:
   pipelineSpec:
+    params:
+    - description: git url to clone
+      name: url
+      type: string
+    - default: ""
+      description: git revision to checkout (branch, tag, sha, ref…)
+      name: revision
+      type: string
+    - default: ""
+      description: (optional) git refspec to fetch before checking out revision
+      name: refspec
+    - default: "true"
+      description: defines if the resource should initialize and fetch the submodules
+      name: submodules
+      type: string
+    - default: "1"
+      description: performs a shallow clone where only the most recent commit(s) will
+        be fetched
+      name: depth
+      type: string
+    - default: "true"
+      description: defines if http.sslVerify should be set to true or false in the
+        global git config
+      name: sslVerify
+      type: string
+    - default: ""
+      description: subdirectory inside the "output" workspace to clone the git repo
+        into
+      name: subdirectory
+      type: string
+    - default: "true"
+      description: clean out the contents of the repo's destination directory (if
+        it already exists) before trying to clone the repo there
+      name: deleteExisting
+      type: string
+    - default: ""
+      description: git HTTP proxy server for non-SSL requests
+      name: httpProxy
+      type: string
+    - default: ""
+      description: git HTTPS proxy server for SSL requests
+      name: httpsProxy
+      type: string
+    - default: ""
+      description: git no proxy - opt out of proxying HTTP/HTTPS requests
+      name: noProxy
+      type: string
+    - default: "true"
+      description: log the commands used during execution
+      name: verbose
+      type: string
+    - default: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.18.1
+      description: the image used where the git-init binary is
+      name: gitInitImage
+      type: string
+    results:
+    - description: The precise commit SHA that was fetched by this Task
+      name: commit
+      value: ""
+    - description: The precise URL that was fetched by this Task
+      name: url
+      value: ""
     tasks:
-    - taskSpec:
+    - params:
+      - name: url
+        value: $(params.url)
+      - name: revision
+        value: $(params.revision)
+      - name: refspec
+        value: $(params.refspec)
+      - name: submodules
+        value: $(params.submodules)
+      - name: depth
+        value: $(params.depth)
+      - name: sslVerify
+        value: $(params.sslVerify)
+      - name: subdirectory
+        value: $(params.subdirectory)
+      - name: deleteExisting
+        value: $(params.deleteExisting)
+      - name: httpProxy
+        value: $(params.httpProxy)
+      - name: httpsProxy
+        value: $(params.httpsProxy)
+      - name: noProxy
+        value: $(params.noProxy)
+      - name: verbose
+        value: $(params.verbose)
+      - name: gitInitImage
+        value: $(params.gitInitImage)
+      taskSpec:
         metadata: {}
+        params:
+        - description: git url to clone
+          name: url
+          type: string
+        - default: ""
+          description: git revision to checkout (branch, tag, sha, ref…)
+          name: revision
+          type: string
+        - default: ""
+          description: (optional) git refspec to fetch before checking out revision
+          name: refspec
+        - default: "true"
+          description: defines if the resource should initialize and fetch the submodules
+          name: submodules
+          type: string
+        - default: "1"
+          description: performs a shallow clone where only the most recent commit(s)
+            will be fetched
+          name: depth
+          type: string
+        - default: "true"
+          description: defines if http.sslVerify should be set to true or false in
+            the global git config
+          name: sslVerify
+          type: string
+        - default: ""
+          description: subdirectory inside the "output" workspace to clone the git
+            repo into
+          name: subdirectory
+          type: string
+        - default: "true"
+          description: clean out the contents of the repo's destination directory
+            (if it already exists) before trying to clone the repo there
+          name: deleteExisting
+          type: string
+        - default: ""
+          description: git HTTP proxy server for non-SSL requests
+          name: httpProxy
+          type: string
+        - default: ""
+          description: git HTTPS proxy server for SSL requests
+          name: httpsProxy
+          type: string
+        - default: ""
+          description: git no proxy - opt out of proxying HTTP/HTTPS requests
+          name: noProxy
+          type: string
+        - default: "true"
+          description: log the commands used during execution
+          name: verbose
+          type: string
+        - default: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.18.1
+          description: the image used where the git-init binary is
+          name: gitInitImage
+          type: string
+        results:
+        - description: The precise commit SHA that was fetched by this Task
+          name: commit
+        - description: The precise URL that was fetched by this Task
+          name: url
+        stepTemplate:
+          name: ""
+          resources: {}
         steps:
         - image: $(params.gitInitImage)
           name: clone
@@ -130,5 +282,11 @@ spec:
             #!/usr/bin/env sh
             source .jx/variables.sh
             jx promote -b --all --timeout 1h --no-poll
+        workspaces:
+        - description: The git repo will be cloned onto the volume backing this workspace
+          name: output
+    workspaces:
+    - description: The git repo will be cloned onto the volume backing this workspace
+      name: output
   serviceAccountName: default
 status: {}

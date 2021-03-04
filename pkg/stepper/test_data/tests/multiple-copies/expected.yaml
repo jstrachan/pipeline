@@ -8,6 +8,9 @@ spec:
     tasks:
     - taskSpec:
         metadata: {}
+        stepTemplate:
+          name: ""
+          resources: {}
         steps:
         - image: gcr.io/kaniko-project/executor:debug-v1.3.0
           name: build1
