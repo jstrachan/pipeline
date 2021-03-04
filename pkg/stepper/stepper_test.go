@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	"github.com/tektoncd/pipeline/pkg/remote"
-	"github.com/tektoncd/pipeline/pkg/remote/fake"
+	"github.com/tektoncd/pipeline/pkg/remote/file"
 	"github.com/tektoncd/pipeline/pkg/stepper"
 	"github.com/tektoncd/pipeline/test/diff"
 	"io/ioutil"
@@ -93,7 +93,11 @@ func TestStepper(t *testing.T) {
 }
 
 func createTestStepper() *stepper.Resolver {
-	fakeResolver := fake.NewFileResolver(filepath.Join("test_data", "git"))
+	if os.Getenv("STEPPER_USE_GIT") == "true" {
+		opts := &stepper.RemoterOptions{}
+		return stepper.NewResolver(opts)
+	}
+	fakeResolver := file.NewResolver(filepath.Join("test_data", "git"))
 	remoteResolver := func(ctx context.Context, uses *v1beta1.Uses) (remote.Resolver, error) {
 		return fakeResolver, nil
 	}

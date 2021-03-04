@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/go-containerregistry/pkg/authn/k8schain"
-	"github.com/pkg/errors"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	gitclient "github.com/tektoncd/pipeline/pkg/git"
 	"github.com/tektoncd/pipeline/pkg/remote"
+	"github.com/tektoncd/pipeline/pkg/remote/git"
 	"github.com/tektoncd/pipeline/pkg/remote/oci"
+	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -15,6 +17,8 @@ type RemoterOptions struct {
 	KubeClient        kubernetes.Interface
 	Namespace         string
 	OCIServiceAccount string
+	Logger            *zap.SugaredLogger
+	GitOptions        gitclient.FetchSpec
 }
 
 func (o *RemoterOptions) CreateRemote(ctx context.Context, uses *v1beta1.Uses) (remote.Resolver, error) {
@@ -29,5 +33,9 @@ func (o *RemoterOptions) CreateRemote(ctx context.Context, uses *v1beta1.Uses) (
 		}
 		return oci.NewResolver(bundle, kc), nil
 	}
-	return nil, errors.Errorf("TODO")
+	server := uses.Server
+	if server == "" {
+		server = "github.com"
+	}
+	return git.NewResolver(server, o.Logger, o.GitOptions), nil
 }

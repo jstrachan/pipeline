@@ -1,4 +1,4 @@
-package fake
+package file
 
 import (
 	"github.com/pkg/errors"
@@ -10,25 +10,24 @@ import (
 	"strings"
 )
 
-// FileResolver implements the Resolver interface files
-type FileResolver struct {
+// Resolver implements the Resolver interface using files
+type Resolver struct {
 	Dir string
 }
 
-// NewResolver is a convenience function to return a new OCI resolver instance as a remote.Resolver with a short, 1m
-// timeout for resolving an individual image.
-func NewFileResolver(dir string) remote.Resolver {
-	return &FileResolver{Dir: dir}
+// NewResolver creates a resolver using the given directory
+func NewResolver(dir string) remote.Resolver {
+	return &Resolver{Dir: dir}
 }
 
 // List returns the list of objects
-func (r *FileResolver) List() ([]remote.ResolvedObject, error) {
+func (r *Resolver) List() ([]remote.ResolvedObject, error) {
 	return nil, nil
 }
 
 // Get returns the object for the given kind and name
-func (r *FileResolver) Get(kind, name string) (runtime.Object, error) {
-	// lets strip any git SHA
+func (r *Resolver) Get(kind, name string) (runtime.Object, error) {
+	// lets strip any git SHA so we can be used for testing more easily
 	i := strings.LastIndex(name, "@")
 	if i > 0 {
 		name = name[0:i]

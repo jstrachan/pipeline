@@ -6,6 +6,8 @@ import (
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	"github.com/tektoncd/pipeline/pkg/remote"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
 	"strconv"
 )
 
@@ -15,6 +17,11 @@ type Resolver struct {
 
 // NewResolver creates a new stepper resolver
 func NewResolver(opts *RemoterOptions) *Resolver {
+	if opts.Logger == nil {
+		observer, _ := observer.New(zap.InfoLevel)
+		opts.Logger = zap.New(observer).Sugar()
+	}
+
 	cachingResolver := NewCachingRemoter(opts.CreateRemote)
 
 	return &Resolver{
@@ -40,7 +47,6 @@ func (r *Resolver) Resolve(ctx context.Context, prs *v1beta1.PipelineRun) error 
 					steps = append(steps, step)
 					continue
 				}
-				replaceSteps, err := r.UsesSteps(ctx, uses, ps, pt, step)
 				taskName := pt.Name
 				if taskName == "" {
 					taskName = strconv.Itoa(i)
@@ -49,6 +55,7 @@ func (r *Resolver) Resolve(ctx context.Context, prs *v1beta1.PipelineRun) error 
 				if stepName == "" {
 					stepName = strconv.Itoa(j)
 				}
+				replaceSteps, err := r.UsesSteps(ctx, uses, ps, pt, step)
 				if err != nil {
 					return errors.Wrapf(err, "failed to use %s for step %s/%s", uses.String(), taskName, stepName)
 				}
